@@ -59,17 +59,16 @@ public:
 
     CSRMatrix(size_t n, size_t m, const std::vector<std::vector<T>> &dense)
         : n_rows(n), n_cols(m), indptr(n+1,0) {
+        if(dense.size() != n_rows) throw size_mismatch();
+        for(const auto &row : dense) if(row.size()!=n_cols) throw size_mismatch();
         indices.clear(); data.clear();
-        indices.reserve(n*m/4+1); data.reserve(n*m/4+1);
+        indices.reserve(n_rows? (n_cols* n_rows/4 + 1) : 1);
+        data.reserve(indices.capacity());
         for(size_t i=0;i<n_rows;++i){
-            if(i<dense.size()){
-                const auto &row = dense[i];
-                for(size_t j=0;j<n_cols;++j){
-                    if(j<row.size()){
-                        T v = row[j];
-                        if(v!=T{}){ indices.push_back(j); data.push_back(v); }
-                    }
-                }
+            const auto &row = dense[i];
+            for(size_t j=0;j<n_cols;++j){
+                T v = row[j];
+                if(v!=T{}){ indices.push_back(j); data.push_back(v); }
             }
             indptr[i+1]=indices.size();
         }
@@ -150,4 +149,3 @@ public:
 }
 
 #endif // CSR_MATRIX_HPP
-
